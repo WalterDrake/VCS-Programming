@@ -171,9 +171,9 @@ int _tmain(int argc, TCHAR* argv[])
 		break;
 	}
 
+	FreeAddrInfoW(result);
 	if (ConnectSocket == INVALID_SOCKET) {
 		_tprintf(TEXT("Unable to connect to server!\n"));
-		FreeAddrInfoW(result);
 		WSACleanup();
 		return 1;
 	}
