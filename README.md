@@ -1,2 +1,13 @@
 # VCS Programming
-[+] Windows programming
+
+- Windows Programming
+    - Task Manager
+    -  Dir Command
+    -  Chat socket
+
+- Malware Programming
+    - Downloader
+    - Reverse shell
+    - Dropper
+    - Keylogger
+
