@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36401.2 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "downloader", "downloader.vcxproj", "{FC9C40D5-5B52-4870-AFF0-E377DE907593}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Debug|x64.ActiveCfg = Debug|x64
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Debug|x64.Build.0 = Debug|x64
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Debug|x86.ActiveCfg = Debug|Win32
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Debug|x86.Build.0 = Debug|Win32
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Release|x64.ActiveCfg = Release|x64
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Release|x64.Build.0 = Release|x64
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Release|x86.ActiveCfg = Release|Win32
+		{FC9C40D5-5B52-4870-AFF0-E377DE907593}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ADDA2508-CEA6-43A7-9A57-281FF4F981C2}
+	EndGlobalSection
+EndGlobal
