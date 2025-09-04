@@ -90,7 +90,7 @@ int _tmain(void*)
 
 	// III.Load Portable Executable
 
-	// Allocate memory for payload and then load it
+	// Allocate memory for payload
 	PVOID pPayloadImage = VirtualAlloc(0, originalPESize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (!pPayloadImage) {
 		printf("[-] VirtualAlloc failed %d\n", GetLastError());
@@ -289,4 +289,5 @@ int _tmain(void*)
 
 	return 0;
 }
+
 
