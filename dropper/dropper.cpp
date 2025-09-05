@@ -245,21 +245,20 @@ int _tmain(void*)
 		}
 
 		DWORD RelocOffset = 0;
-		// Walk through all relocation blocks 
+		// Walk relocation table (.reloc) and patch absolute addresses.
+		// This ensures all absolute addresses (scattered in .text/.data/.rdata, etc.) are corrected for the new base.
 		while (RelocOffset < payloadImageDataReloc.Size)
 		{
 			const PIMAGE_BASE_RELOCATION pImageBaseRelocation = (PIMAGE_BASE_RELOCATION)((DWORD64)pPayloadImage + pPayloadImageRelocSection->PointerToRawData + RelocOffset);
 			RelocOffset += sizeof(IMAGE_BASE_RELOCATION);
 			// Number of relocation entries in this block
 			const DWORD NumberOfEntries = (pImageBaseRelocation->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(IMAGE_RELOCATION_ENTRY);
-			// Process each entry
 			for (DWORD i = 0; i < NumberOfEntries; i++)
 			{
 				const PIMAGE_RELOCATION_ENTRY pImageRelocationEntry = (PIMAGE_RELOCATION_ENTRY)((DWORD64)pPayloadImage + pPayloadImageRelocSection->PointerToRawData + RelocOffset);
 				RelocOffset += sizeof(IMAGE_RELOCATION_ENTRY); // skip padding
 				if (pImageRelocationEntry->Type == 0)
 					continue;
-				// Target address inside victim process
 				const DWORD64 AddressLocation = (DWORD64)pVictimHollowedAllocation + pImageBaseRelocation->VirtualAddress + pImageRelocationEntry->Offset;
 				DWORD64 PatchedAddress = 0;
 
@@ -289,5 +288,6 @@ int _tmain(void*)
 
 	return 0;
 }
+
 
 
