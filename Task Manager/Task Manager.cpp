@@ -27,7 +27,6 @@ int main(void)
 		return 1;
 	}
 
-	//
 	PROCESSENTRY32 pe;
 	// Set the size of the structure before using it.
 	pe.dwSize = sizeof(PROCESSENTRY32);
