@@ -2,20 +2,17 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <strsafe.h>
+#include <Shlwapi.h>
 
+#pragma comment(lib, "Shlwapi.lib")
 
-void printError(TCHAR const* msg)
-{
-	_tprintf(TEXT("%s: %d\n"), msg, GetLastError());
-}
-
-int DirCommand(LPTSTR szDir, bool recursion)
+int DirCommand(LPTSTR szDir, BOOL recursion)
 {
 	WIN32_FIND_DATA ffd;
 	DWORD dwError = 0;
 
 	// Array to store subdirectories
-	TCHAR* subDirs[MAX_PATH];
+	TCHAR** arraySubDirs = NULL;
 	int subDirCount = 0;
 
 	HANDLE hFind = FindFirstFile(szDir, &ffd);
@@ -29,18 +26,46 @@ int DirCommand(LPTSTR szDir, bool recursion)
 		szDir[len - 1] = TEXT('\0'); // Remove wildcard for path building
 
 	do {
-		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-			_tprintf(TEXT("<DIR>  %s\n"), ffd.cFileName);
+		// Convert the last-write time to local time
+		FILETIME ftLocal;
+		SYSTEMTIME st;
+		FileTimeToLocalFileTime(&ffd.ftLastWriteTime, &ftLocal);
+		FileTimeToSystemTime(&ftLocal, &st);
 
+
+		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d    <DIR>          %s\n"),
+				st.wMonth, st.wDay, st.wYear,
+				st.wHour, st.wMinute,
+				ffd.cFileName);
 			if (recursion && _tcscmp(ffd.cFileName, TEXT(".")) != 0 && _tcscmp(ffd.cFileName, TEXT("..")) != 0) {
-				subDirs[subDirCount] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-				StringCchCopy(subDirs[subDirCount], MAX_PATH, szDir);
-				StringCchCat(subDirs[subDirCount], MAX_PATH, ffd.cFileName);
-				subDirCount++;
+				size_t lengthOfSubPath = _tcslen(szDir) + _tcslen(ffd.cFileName) + 1; // add for null terminator
+				TCHAR* subPath = (TCHAR*)malloc(lengthOfSubPath * sizeof(TCHAR));
+				if (subPath) {
+					StringCchCopy(subPath, lengthOfSubPath, szDir);
+					StringCchCat(subPath, lengthOfSubPath, ffd.cFileName);
+
+					TCHAR** subDirs = (TCHAR**)realloc(arraySubDirs, (subDirCount + 1) * sizeof(TCHAR*));
+					if (subDirs) {
+						arraySubDirs = subDirs;
+						arraySubDirs[subDirCount] = subPath;
+						subDirCount++;
+					}
+					else {
+						free(subPath);
+					}
+				}
 			}
 		}
 		else {
-			_tprintf(TEXT("       %s\n"), ffd.cFileName);
+			LARGE_INTEGER filesize;
+			filesize.HighPart = ffd.nFileSizeHigh;
+			filesize.LowPart = ffd.nFileSizeLow;
+			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d %17lld %s\n"),
+				st.wMonth, st.wDay, st.wYear,
+				st.wHour, st.wMinute,
+				filesize.QuadPart,
+				ffd.cFileName);
 		}
 	} while (FindNextFile(hFind, &ffd) != 0);
 
@@ -55,61 +80,104 @@ int DirCommand(LPTSTR szDir, bool recursion)
 	// recurse into subfolders
 	if (recursion) {
 		for (int i = 0; i < subDirCount; i++) {
-			TCHAR searchPath[MAX_PATH];
-			_tprintf(TEXT("\nDirectory of: %s\n"), subDirs[i]);
-			StringCchCopy(searchPath, MAX_PATH, subDirs[i]);
-			StringCchCat(searchPath, MAX_PATH, TEXT("\\*"));
+			TCHAR *searchPath = NULL;
+			size_t lengthOfSearchPath = _tcslen(arraySubDirs[i]) + 3; // add for wildcard and null terminator
+			_tprintf(TEXT("\nDirectory of: %s\n"), arraySubDirs[i]);
+			searchPath = (TCHAR*)malloc((lengthOfSearchPath * sizeof(TCHAR)));
+			if(!searchPath) {
+				_tprintf(TEXT("Memory allocation failed.\n"));
+				return 1;
+			}
+			StringCchCopy(searchPath, lengthOfSearchPath, arraySubDirs[i]);
+			StringCchCat(searchPath, lengthOfSearchPath, TEXT("\\*"));
 			DirCommand(searchPath, true);
-			free(subDirs[i]); // Free allocated memory for subdirectory
+
+			free(searchPath);
+			free(arraySubDirs[i]);
 		}
 	}
+	free(arraySubDirs);
 	return 0;
 }
 
 int _tmain(int argc, TCHAR* argv[])
 {
-
-	size_t length_of_arg;
-	TCHAR szDir[MAX_PATH];
-	TCHAR* szSubDir[MAX_PATH];
-
-	if (argc < 2) {
-		_tprintf(TEXT("Usage: %s [/S] <directory>\n"), argv[0]);
-		return 1;
-	}
+	DWORD lengthOfPath = 0;
+	TCHAR* currentDirectoryPath = NULL;
+	LPCTSTR inputPath = NULL;
+	HRESULT hr = NULL;
+	BOOL useLongPrefix = FALSE;
 
 	if (argc > 3) {
 		_tprintf(TEXT("Too much arguments. Usage: %s [/S] <directory>\n"), argv[0]);
 		return 1;
 	}
 
-	// Determine the length of the directory path argument not exceeding MAX_PATH
-	if (FAILED(StringCchLengthW(argv[argc - 1], MAX_PATH, &length_of_arg)))
-	{
-		printError(TEXT("StringCchLength failed with error"));
+	if ((argc == 1)) {
+		inputPath = TEXT(".");
+	}
+	else {
+		inputPath = argv[argc - 1];
+	}
+
+	// Get length of the full path
+	lengthOfPath = GetFullPathName(inputPath, 0, NULL, NULL); // return the terminated string
+	if (lengthOfPath == 0) {
+		_tprintf(TEXT("GetFullPathName failed: %lu\n"), GetLastError());
 		return 1;
 	}
 
-	if (length_of_arg > MAX_PATH - 3)
-	{
-		printError(TEXT("Directory path is too long.\n"));
+	useLongPrefix = (lengthOfPath >= MAX_PATH);
+
+	if (useLongPrefix) {
+		// add length for wildcard and path prefix
+		lengthOfPath += 6;
+	}
+	else {
+		// add length for wildcard
+		lengthOfPath += 2;
+	}
+
+	currentDirectoryPath = (TCHAR*)malloc(lengthOfPath * sizeof(TCHAR));
+	if (!currentDirectoryPath) {
+		_tprintf(TEXT("Memory allocation failed.\n"));
 		return 1;
 	}
-	_tprintf(TEXT("Target directory is %s\n"), argv[argc - 1]);
 
-	StringCchCopy(szDir, MAX_PATH, argv[argc - 1]);
+	if (GetFullPathName(inputPath, lengthOfPath, currentDirectoryPath, NULL) == 0) {
+		_tprintf(TEXT("GetFullPathName failed: %lu\n"), GetLastError());
+		free(currentDirectoryPath);
+		return 1;
+	}
+
+	if (PathFileExists(currentDirectoryPath)) {
+		_tprintf(TEXT("Target directory is %s\n"), currentDirectoryPath);
+	}
+	else {
+		_tprintf(TEXT("Path does NOT exist: %s\n"), currentDirectoryPath);
+	}
+
+	if (useLongPrefix) {
+		memmove(currentDirectoryPath + 4, currentDirectoryPath, lengthOfPath * sizeof(TCHAR));
+		memcpy(currentDirectoryPath, TEXT("\\\\?\\"), 4 * sizeof(TCHAR));
+	}
+
 	// Append the wildcard to the directory path
-	StringCchCat(szDir, MAX_PATH, TEXT("\\*"));
+	hr = StringCchCat(currentDirectoryPath, lengthOfPath, TEXT("\\*"));
+	if (FAILED(hr)) {
+		_tprintf(TEXT("Appending failed!\n"));
+	}
 
 	if (argc == 3 && _tcscmp(argv[1], TEXT("/S")) == 0) {
-		if (DirCommand(szDir, true))
+		if (DirCommand(currentDirectoryPath, TRUE))
 			return 1;
 	}
 	else
 	{
-		if (DirCommand(szDir, false))
+		if (DirCommand(currentDirectoryPath, FALSE))
 			return 1;
 	}
+	free(currentDirectoryPath);
 	return 0;
 }
 
