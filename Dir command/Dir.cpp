@@ -32,12 +32,8 @@ int DirCommand(LPTSTR szDir, BOOL recursion)
 		FileTimeToLocalFileTime(&ffd.ftLastWriteTime, &ftLocal);
 		FileTimeToSystemTime(&ftLocal, &st);
 
-
 		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d    <DIR>          %s\n"),
-				st.wMonth, st.wDay, st.wYear,
-				st.wHour, st.wMinute,
-				ffd.cFileName);
+			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d    <DIR>          %s\n"),st.wMonth, st.wDay, st.wYear,st.wHour, st.wMinute,ffd.cFileName);
 			if (recursion && _tcscmp(ffd.cFileName, TEXT(".")) != 0 && _tcscmp(ffd.cFileName, TEXT("..")) != 0) {
 				size_t lengthOfSubPath = _tcslen(szDir) + _tcslen(ffd.cFileName) + 1; // add for null terminator
 				TCHAR* subPath = (TCHAR*)malloc(lengthOfSubPath * sizeof(TCHAR));
@@ -61,11 +57,7 @@ int DirCommand(LPTSTR szDir, BOOL recursion)
 			LARGE_INTEGER filesize;
 			filesize.HighPart = ffd.nFileSizeHigh;
 			filesize.LowPart = ffd.nFileSizeLow;
-			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d %17lld %s\n"),
-				st.wMonth, st.wDay, st.wYear,
-				st.wHour, st.wMinute,
-				filesize.QuadPart,
-				ffd.cFileName);
+			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d %17lld %s\n"), st.wMonth, st.wDay, st.wYear, st.wHour, st.wMinute, filesize.QuadPart, ffd.cFileName);
 		}
 	} while (FindNextFile(hFind, &ffd) != 0);
 
@@ -80,11 +72,11 @@ int DirCommand(LPTSTR szDir, BOOL recursion)
 	// recurse into subfolders
 	if (recursion) {
 		for (int i = 0; i < subDirCount; i++) {
-			TCHAR *searchPath = NULL;
+			TCHAR* searchPath = NULL;
 			size_t lengthOfSearchPath = _tcslen(arraySubDirs[i]) + 3; // add for wildcard and null terminator
 			_tprintf(TEXT("\nDirectory of: %s\n"), arraySubDirs[i]);
 			searchPath = (TCHAR*)malloc((lengthOfSearchPath * sizeof(TCHAR)));
-			if(!searchPath) {
+			if (!searchPath) {
 				_tprintf(TEXT("Memory allocation failed.\n"));
 				return 1;
 			}
