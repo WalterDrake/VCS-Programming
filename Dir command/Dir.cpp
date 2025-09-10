@@ -33,7 +33,7 @@ int DirCommand(LPTSTR szDir, BOOL recursion)
 		FileTimeToSystemTime(&ftLocal, &st);
 
 		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d    <DIR>          %s\n"),st.wMonth, st.wDay, st.wYear,st.wHour, st.wMinute,ffd.cFileName);
+			_tprintf(TEXT("%02d/%02d/%04d  %02d:%02d    <DIR>          %s\n"), st.wMonth, st.wDay, st.wYear, st.wHour, st.wMinute, ffd.cFileName);
 			if (recursion && _tcscmp(ffd.cFileName, TEXT(".")) != 0 && _tcscmp(ffd.cFileName, TEXT("..")) != 0) {
 				size_t lengthOfSubPath = _tcslen(szDir) + _tcslen(ffd.cFileName) + 1; // add for null terminator
 				TCHAR* subPath = (TCHAR*)malloc(lengthOfSubPath * sizeof(TCHAR));
