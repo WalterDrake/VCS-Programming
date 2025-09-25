@@ -1,13 +1,15 @@
 # VCS Programming
 
 - Windows Programming
-    - Task Manager
+    -  Task Manager
     -  Dir Command
     -  Chat socket
 
 - Malware Programming
     - Downloader
     - Reverse shell
-    - Dropper
+    - Dropper (using Process Hollowing technique)
     - Keylogger
+
+- Process Injection (using Reflective DLL injection technique)
 
