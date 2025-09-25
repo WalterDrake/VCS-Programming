@@ -450,9 +450,35 @@ DLLEXPORT ULONG_PTR WINAPI REFLDR_NAME(VOID)
 	((DLLMAIN)uiValueA)((HINSTANCE)uiBaseAddress, DLL_PROCESS_ATTACH, lpParameter);
 #else
 	// if we are injecting an DLL via a stub we call DllMain with no parameter
+	// This case is called when we run the LoadLibraryR function in LoadLibraryR.c of the injector, but I have removed that.
 	((DLLMAIN)uiValueA)((HINSTANCE)uiBaseAddress, DLL_PROCESS_ATTACH, NULL);
 #endif
 
 	// STEP 8: return our new entry point address so whatever called us can call DllMain() if needed.
 	return uiValueA;
 }
+//===============================================================================================//
+#ifndef REFLECTIVEDLLINJECTION_CUSTOM_DLLMAIN
+
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpReserved)
+{
+	BOOL bReturnValue = TRUE;
+	switch (dwReason)
+	{
+	case DLL_QUERY_HMODULE:
+		if (lpReserved != NULL)
+			*(HMODULE*)lpReserved = hAppInstance;
+		break;
+	case DLL_PROCESS_ATTACH:
+		hAppInstance = hinstDLL;
+		break;
+	case DLL_PROCESS_DETACH:
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+		break;
+	}
+	return bReturnValue;
+}
+
+#endif
+//===============================================================================================//
