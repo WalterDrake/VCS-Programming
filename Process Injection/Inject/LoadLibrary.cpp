@@ -107,6 +107,13 @@ DWORD GetReflectiveLoaderOffset(VOID* lpReflectiveDllBuffer)
 	// get a counter for the number of exported functions...
 	dwCounter = ((PIMAGE_EXPORT_DIRECTORY)uiExportDir)->NumberOfNames;
 
+	/*
+	* In EAT We have three corresponding arrays: AddressOfFunctions, AddressOfNames, and AddressOfNameOrdinals.
+	* Firstly, we use the AddressOfNames array to locate the exported function name.
+	* Secondly, we use the AddressOfNameOrdinals array as an index into the AddressOfFunctions array. (The arrays of AddressOfNames and AddressOfNameOrdinals are 1:1 correspondance).
+	* Finally, we use the resulting index into the AddressOfFunctions array to locate the function's address.
+	*/
+
 	// loop through all the exported functions to find the ReflectiveLoader
 	while (dwCounter--)
 	{

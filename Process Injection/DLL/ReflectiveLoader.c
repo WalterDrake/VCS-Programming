@@ -331,6 +331,19 @@ DLLEXPORT ULONG_PTR WINAPI REFLDR_NAME(VOID)
 	// uiValueC is the first entry in the import table
 	uiValueC = (uiBaseAddress + ((PIMAGE_DATA_DIRECTORY)uiValueB)->VirtualAddress);
 
+	/*
+	* How to resolve IAT:
+	* Firstly, we have IMAGE_IMPORT_DESCRIPTOR structures, one for each DLL we are importing from. We use LoadLibrary to load each DLL to memory.
+	* In each IMAGE_IMPORT_DESCRIPTOR:
+	*	OriginalFirstThunk -> RVA of ILT (points to an array of IMAGE_THUNK_DATA structures, one for each function we are importing from this DLL)
+	*	FirstThunk -> RVA of IAT (points to an array of IMAGE_THUNK_DATA structures, one for each function we are importing from this DLL) is where we write the resolved addresses to.
+	*	Name -> RVA to the name of the DLL (ASCII string)
+	* Secondly, check how imports were requested, by name or by ordinal.
+	* Thirdly, resolve the function address:
+	*	If by ordinal, get the Export Directory, then use the ordinal as an index into the AddressOfFunctions array to get the function address.
+	*	If by name , use GetProcAddress to get the function address. GetProcAddress do sames steps as we find address of function in EAT.
+	*/
+
 	// itterate through all imports
 	while (((PIMAGE_IMPORT_DESCRIPTOR)uiValueC)->Name)
 	{
