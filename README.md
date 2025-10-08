@@ -13,3 +13,8 @@
 
 - Process Injection (using Reflective DLL injection technique)
 
+- Hooking
+    - IAT Hook
+    - EAT Hook
+    - Detect open file by Inline Hook
+
