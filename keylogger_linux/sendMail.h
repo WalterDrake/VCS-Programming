@@ -3,9 +3,9 @@
 #include <curl/curl.h>
 
 #define SMTP_URL "smtps://smtp.gmail.com:465"
-#define USER_EMAIL "dat123mall@gmail.com"
-#define USER_PASS "xdqs ophh vpqg htxp"
-#define TO_EMAIL "dat1234mall@gmail.com"
+#define USER_EMAIL "sender@gmail.com"
+#define USER_PASS "xxxx xxxx xxxx xxxx"
+#define TO_EMAIL "recipient@gmail.com"
 
 static int emailCounter = 1;
 
