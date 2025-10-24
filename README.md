@@ -18,3 +18,11 @@
     - EAT Hook
     - Detect open file by Inline Hook
 
+- Linux Program
+   - Get full path of a process from PID
+   - Get all libraries loaded in memory of process from PID
+
+- Malware Linux
+   - Keylogger
+   - Ransomware
+
