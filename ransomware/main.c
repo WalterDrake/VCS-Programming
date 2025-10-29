@@ -7,6 +7,8 @@
 #include "decrypt.h"
 #include "note.h"
 
+// Compile with: gcc -o main main.c utils.c encrypt.c decrypt.c note.c -lcrypto
+
 unsigned char *sessionKey = NULL;
 unsigned int decryptFlag = 0;
 unsigned char *privateKeyPEM = NULL;

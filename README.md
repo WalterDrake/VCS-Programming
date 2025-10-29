@@ -26,3 +26,6 @@
    - Keylogger
    - Ransomware
 
+- Hooking Linux
+   - Function hooking use LD_PRELOAD 
+
